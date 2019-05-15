@@ -15,21 +15,33 @@ class Post {
   }
 }
 
-Future<Post> fetchPost() async {
-  final response = await http.get('https://jsonplaceholder.typicode.com/posts/1');
+class Posts {
+  final List<Post> items;
+
+  Posts({this.items});
+
+  factory Posts.fromJson(List<dynamic> json) {
+    return Posts(
+      items: json.map((item) => Post.fromJson(item)).toList()
+    );
+  }
+}
+
+Future<Posts> fetchPosts() async {
+  final response = await http.get('https://jsonplaceholder.typicode.com/posts/');
   if (200 <= response.statusCode && response.statusCode < 300) {
-    return Post.fromJson(json.decode(response.body));
+    return Posts.fromJson(json.decode(response.body));
   } else {
     throw Exception('Failed to fetch post');
   }
 }
 
-void main() => runApp(MyApp(post: fetchPost()));
+void main() => runApp(MyApp(posts: fetchPosts()));
 
 class MyApp extends StatelessWidget {
-  final Future<Post> post;
+  final Future<Posts> posts;
 
-  MyApp({Key key, this.post}) : super(key: key);
+  MyApp({Key key, this.posts}) : super(key: key);
 
   // This widget is the root of your application.
   @override
@@ -53,11 +65,11 @@ class MyApp extends StatelessWidget {
           title: Text('Post'),
         ),
         body: Center(
-          child: FutureBuilder<Post>(
-            future: post,
+          child: FutureBuilder<Posts>(
+            future: posts,
             builder: (context, snapshot) {
               if (snapshot.hasData) {
-                return Text(snapshot.data.title);
+                return Text("${snapshot.data.items.map((item) => item.title).join(' / ')}");
               }
               if (snapshot.hasError) {
                 return Text("${snapshot.error}");
