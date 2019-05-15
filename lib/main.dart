@@ -73,7 +73,10 @@ class MyApp extends StatelessWidget {
             builder: (context, snapshot) {
               if (snapshot.hasData) {
                 final Posts data = snapshot.data;
-                return ListView.builder(
+                return ListView.separated(
+                  separatorBuilder: (context, index) => Divider(
+                    color: Colors.grey,
+                  ),
                   itemCount: data.count,
                   itemBuilder: (context, index) {
                     return ListTile(
