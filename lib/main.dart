@@ -1,8 +1,36 @@
-import 'package:flutter/material.dart';
+import 'dart:convert';
 
-void main() => runApp(MyApp());
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+
+class Post {
+  final String title;
+
+  Post({this.title});
+
+  factory Post.fromJson(Map<String, dynamic> json) {
+    return Post(
+      title: json['title']
+    );
+  }
+}
+
+Future<Post> fetchPost() async {
+  final response = await http.get('https://jsonplaceholder.typicode.com/posts/1');
+  if (200 <= response.statusCode && response.statusCode < 300) {
+    return Post.fromJson(json.decode(response.body));
+  } else {
+    throw Exception('Failed to fetch post');
+  }
+}
+
+void main() => runApp(MyApp(post: fetchPost()));
 
 class MyApp extends StatelessWidget {
+  final Future<Post> post;
+
+  MyApp({Key key, this.post}) : super(key: key);
+
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
@@ -20,7 +48,24 @@ class MyApp extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: MyHomePage(title: 'Flutter Demo Home Page'),
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text('Post'),
+        ),
+        body: Center(
+          child: FutureBuilder<Post>(
+            future: post,
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                return Text(snapshot.data.title);
+              }
+              if (snapshot.hasError) {
+                return Text("${snapshot.error}");
+              }
+              return CircularProgressIndicator();
+            }),
+          ),
+      ),
     );
   }
 }
