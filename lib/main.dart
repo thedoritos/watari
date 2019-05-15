@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:http/http.dart' as http;
 
 class Post {
@@ -17,6 +18,8 @@ class Post {
 
 class Posts {
   final List<Post> items;
+
+  int get count => items.length;
 
   Posts({this.items});
 
@@ -69,7 +72,15 @@ class MyApp extends StatelessWidget {
             future: posts,
             builder: (context, snapshot) {
               if (snapshot.hasData) {
-                return Text("${snapshot.data.items.map((item) => item.title).join(' / ')}");
+                final Posts data = snapshot.data;
+                return ListView.builder(
+                  itemCount: data.count,
+                  itemBuilder: (context, index) {
+                    return ListTile(
+                      title: Text("${data.items[index].title}"),
+                    );
+                  },
+                );
               }
               if (snapshot.hasError) {
                 return Text("${snapshot.error}");
